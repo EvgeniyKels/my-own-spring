@@ -1,19 +1,18 @@
 package com.kls;
 
-import org.springfraemwork.beans.factory.IBeanFactory;
-import org.springfraemwork.beans.factory.IBeanFactoryAware;
-import org.springfraemwork.beans.factory.IBeanNameAware;
-import org.springfraemwork.beans.factory.IInitializingBean;
+import org.springfraemwork.beans.factory.*;
 import org.springfraemwork.beans.factory.annotation.RandomTextAfterInit;
 import org.springfraemwork.beans.factory.annotation.RandomTextBeforeInit;
 import org.springfraemwork.beans.factory.stereotype.Service;
+import org.springfraemwork.context.IApplicationListener;
+import org.springfraemwork.context.event.ContextClosedEvent;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Service
-public class PromotionService implements IBeanNameAware, IBeanFactoryAware, IInitializingBean {
+public class PromotionService implements IBeanNameAware, IBeanFactoryAware, IInitializingBean, IDisposableBean, IApplicationListener<ContextClosedEvent> {
     private String beanName;
     private IBeanFactory factory;
     private String afterInitializingPropertiesField;
@@ -61,5 +60,20 @@ public class PromotionService implements IBeanNameAware, IBeanFactoryAware, IIni
 
     public String getRandomTextAfter() {
         return randomTextAfter;
+    }
+
+    @PreDestroy
+    public void contextClosing() {
+        System.out.println("Context closing");
+    }
+
+    @Override
+    public void destroy() {
+        System.out.println("Called destroy method for ".concat(this.getClass().getSimpleName()));
+    }
+
+    @Override
+    public void onApplicationEvent(ContextClosedEvent e) {
+        System.out.println(">> ContextClosed EVENT");
     }
 }

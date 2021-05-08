@@ -6,6 +6,7 @@ import org.springfraemwork.beans.factory.config.IBeanPostProcessor;
 import org.springfraemwork.beans.factory.stereotype.Component;
 import org.springfraemwork.beans.factory.stereotype.Service;
 
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -134,13 +135,28 @@ public class BeanFactory implements IBeanFactory {
     }
 
     @Override
-    public void addPostProcessor(IBeanPostProcessor beanPostProcessor) {
-        this.beansWithPostProcessors.add(beanPostProcessor);
+    public void close() {
+        for (Object bean : singletons.values()) {
+            if (bean instanceof IDisposableBean) {
+                ((IDisposableBean)bean).destroy();
+            }
+            Method[] methods = bean.getClass().getMethods();
+            for (Method method : methods) {
+                if (method.isAnnotationPresent(PreDestroy.class)) {
+                    try {
+                        method.invoke(bean);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     @Override
-    public void close() {
-
+    public Map<String, Object> getSingletons() {
+        return singletons;
     }
 
     private void injectBeanBySetter(String setterName, Object dependency, Object singleton) {

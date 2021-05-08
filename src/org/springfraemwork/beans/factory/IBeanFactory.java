@@ -2,6 +2,8 @@ package org.springfraemwork.beans.factory;
 
 import org.springfraemwork.beans.factory.config.IBeanPostProcessor;
 
+import java.util.Map;
+
 public interface IBeanFactory {
     /**
      * scan base package of the app, get all classes, create instances and put then to singleton map
@@ -37,13 +39,9 @@ public interface IBeanFactory {
     void initializeBeans();
 
     /**
-     * add post processor to post processor list
-     * @param beanPostProcessor
-     */
-    void addPostProcessor(IBeanPostProcessor beanPostProcessor);
-
-    /**
      * serves closing of the context
      */
     void close();
+
+    Map<String, Object> getSingletons();
 }
