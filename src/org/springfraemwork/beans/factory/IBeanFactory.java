@@ -23,6 +23,8 @@ public interface IBeanFactory {
      */
     Object getBean(String beanName);
 
+    Object getBean(Class<?> clazz);
+
     /**
      * iterates through bean map, finds all instances of IBeanNameAware and for this instances set bean name
      */

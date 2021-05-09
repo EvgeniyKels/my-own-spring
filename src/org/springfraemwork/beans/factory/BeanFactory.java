@@ -1,5 +1,6 @@
 package org.springfraemwork.beans.factory;
 
+import com.kls.ProfilingAnnotationBeanProxyPostProcessor;
 import org.springfraemwork.beans.factory.annotation.Autowired;
 import org.springfraemwork.beans.factory.annotation.Resource;
 import org.springfraemwork.beans.factory.config.IBeanPostProcessor;
@@ -23,6 +24,11 @@ public class BeanFactory implements IBeanFactory {
     @Override
     public Object getBean(String beanName) {
         return singletons.get(beanName);
+    }
+
+    @Override
+    public Object getBean(Class<?> clazz) {
+        return singletons.values().stream().filter(x -> x.getClass().equals(clazz)).findFirst().orElseThrow();
     }
 
     @Override
@@ -52,7 +58,7 @@ public class BeanFactory implements IBeanFactory {
                 // by full name of the class receive object of the class
                 if(fileName.endsWith(".class")) {
                     String className = fileName.substring(0, fileName.lastIndexOf("."));
-                    Class classObject;
+                    Class <?> classObject;
                     try {
                         classObject = Class.forName(basePackage.concat(".").concat(className));
                     } catch (ClassNotFoundException e) {
@@ -68,6 +74,20 @@ public class BeanFactory implements IBeanFactory {
                         } catch (InstantiationException | IllegalAccessException e) {
                             e.printStackTrace();
                             return;
+                        }
+                    }
+
+                    Class<?>[] interfaces = classObject.getInterfaces();
+                    for (Class<?> iBeanPostProcessorCandidateClass : interfaces) {
+                        if (iBeanPostProcessorCandidateClass.equals(IBeanPostProcessor.class)) {
+                            IBeanPostProcessor beanPostProcessor = null;
+                            try {
+                                beanPostProcessor = (IBeanPostProcessor) classObject.newInstance();
+                            } catch (InstantiationException | IllegalAccessException e) {
+                                e.printStackTrace();
+                                return;
+                            }
+                            beansWithPostProcessors.add(beanPostProcessor);
                         }
                     }
                 }
@@ -129,7 +149,12 @@ public class BeanFactory implements IBeanFactory {
                 ((IInitializingBean)bean).afterPropertiesSet();
             }
             for (IBeanPostProcessor beanPostProcessor : beansWithPostProcessors) {
-                beanPostProcessor.postProcessAfterInitialization(bean, name);
+//                beanPostProcessor.postProcessAfterInitialization(bean, name);
+                if (beanPostProcessor instanceof ProfilingAnnotationBeanProxyPostProcessor) {
+                    singletons.put(name, beanPostProcessor.postProcessAfterInitialization(bean, name));
+                } else {
+                    beanPostProcessor.postProcessAfterInitialization(bean, name);
+                }
             }
         }
     }

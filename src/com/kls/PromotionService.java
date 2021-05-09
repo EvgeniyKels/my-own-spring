@@ -1,5 +1,6 @@
 package com.kls;
 
+import com.kls.custom.annotation.Profiling;
 import org.springfraemwork.beans.factory.*;
 import org.springfraemwork.beans.factory.annotation.RandomTextAfterInit;
 import org.springfraemwork.beans.factory.annotation.RandomTextBeforeInit;
@@ -12,6 +13,7 @@ import javax.annotation.PreDestroy;
 import java.time.LocalDateTime;
 
 @Service
+@Profiling
 public class PromotionService implements IBeanNameAware, IBeanFactoryAware, IInitializingBean, IDisposableBean, IApplicationListener<ContextClosedEvent> {
     private String beanName;
     private IBeanFactory factory;

@@ -11,7 +11,6 @@ import java.lang.reflect.Type;
 public class ApplicationContext {
     private final BeanFactory beanFactory = new BeanFactory();
 
-    //TODO how to add bean post processors
     public ApplicationContext(String basePackage) {
         System.out.println("************ Context is under construction ************");
         beanFactory.instantinate(basePackage);
@@ -46,5 +45,13 @@ public class ApplicationContext {
                 }
             }
         }
+    }
+
+    public Object getBean(String beanName) {
+        return beanFactory.getBean(beanName);
+    }
+
+    public Object getBean(Class<?>clazz) {
+        return beanFactory.getBean(clazz);
     }
 }
